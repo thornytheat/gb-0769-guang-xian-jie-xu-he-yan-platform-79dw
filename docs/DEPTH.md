@@ -14,6 +14,7 @@
 | M5 设计与实测对账 | 核对逐接头是否缺证 | POST /api/design | `app/modules/design/service.py` | `tests/test_design.py` |
 | M6 批次留档复跑 | 留档和重跑同一轨迹组 | POST /api/inspections | `app/modules/archive/storage.py` | `tests/test_archive.py` |
 | M7 光纤证据签发 | 复核签发条件并下载 | GET /api/certificate/<id> | `app/modules/certificate/service.py` | `tests/test_certificate.py` |
+| M8 停纤换序排程 | 规划互换拆步、争用仲裁与中断续排 | POST /api/reswitch/plan | `app/modules/reswitch/planner.py` | `tests/test_reswitch_planner.py` `tests/test_reswitch_execution.py` `tests/test_reswitch_api.py` |
 
 ## 陷阱登记
 
@@ -28,6 +29,9 @@
 | TRAP-15 | A-02 米和千米并存 | 两条虚假轨迹 | 归一毫米后比对 | `app/modules/trace/units.py` | `tests/test_trace.py::test_equivalent_units_dedupe` |
 | TRAP-19 | A100 可匹配 B97 或 B101 | 最近优先导致 A105 无法配对 | 先最大配对数再最小间差 | `app/modules/pairs/optimal.py` | `tests/test_pairs.py::test_global_pairing_beats_greedy_and_keeps_competition` |
 | TRAP-21 | A700 和 B820 均无对侧 | 只报一端孤测 | 分别记录缺 A 或缺 B | `app/modules/pairs/service.py` | `tests/test_pairs.py::test_opposite_ends_missing_in_both_directions` |
+| TRAP-22 | 互换缺合格备用芯 | 强行直接对调导致承载业务断线 | 两业务整体挂起互不占位，原因 `SWAP_WITHOUT_SPARE`/`SPARE_NOT_RECONCILED` | `app/modules/reswitch/planner.py` | `tests/test_reswitch_planner.py::test_R3_swap_without_spare_holds_both_services_without_occupying` |
+| TRAP-23 | 两单争用同一备用芯 | 两单都以为占住同一根 | 按换序单编号确定性仲裁，先单占用、后单挂起 | `app/modules/reswitch/planner.py` | `tests/test_reswitch_planner.py::test_R4_two_orders_contending_one_spare_only_one_occupies` |
+| TRAP-24 | 中断后同一业务出现在两步目标里 | 按"当前位置=步骤目标"逐点判完成，全换完反而漏判第一步 | 模拟全局序列取与完整现场快照一致的最长已完成前缀 | `app/modules/reswitch/executor.py` | `tests/test_reswitch_execution.py::test_R6_resume_distinguishes_each_prefix_state` |
 
 ## 对账规则
 
